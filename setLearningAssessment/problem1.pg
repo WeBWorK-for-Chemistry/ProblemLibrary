@@ -122,13 +122,13 @@ Context("Numeric");
 $r = random(0.01, 0.09, 0.001);
 
 Context("InexactValueWithUnits");
-Context()->flags->set('newUnit'=>[['tsp','teaspoon', 'teaspoons']]);
+#Context()->flags->set('newUnit'=>[['tsp','teaspoon', 'teaspoons']]);
 $givenForText = InexactValue($r,3);
 $given = InexactValueWithUnits([$r, 3], 'tsp');
 
 # using 4.93 mL = 1 tsp
 $inf = 9**9**9;
-$n1 = InexactValueWithUnits(['4.93', 3], 'mL'); 
+$n1 = InexactValueWithUnits([4.93, 3], 'mL'); 
 $d1 = InexactValueWithUnits(['1', $inf], 'tsp'); # make this exact (infinite s.f., 9**9**9 is a shortcut for infinity)
 
 $answer = $given * $n1 / $d1;
@@ -179,7 +179,6 @@ $scaffold = Scaffold::Begin(
     hardcopy_is_open  => "always",
 );
 
-
 Section::Begin("Part 1: Equality Statement");
 BEGIN_PGML
 
@@ -193,7 +192,6 @@ END_PGML
 ANS($equalityMultiAnswer->cmp);
 
 Section::End();
-
 
 Section::Begin("Part 2: Conversion Factors");
 $groupStart = '';
