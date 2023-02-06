@@ -48,7 +48,7 @@ $ival4 = InexactValue(sprintf('%.2f',$val4)."e-".$exp1, 4);
 $ival5 = InexactValue($val5."e-".$exp2, 5);
 $ans2 = InexactValue($ival3 / ($ival4*$ival5));
 
-$val6 = random(1.00, 9.999, 0.001);
+$val6 = random(1.00, 9.99, 0.01);
 $val7 = random(100, 900, 1);
 $val8 = random(1.00, 9.999, 0.001);
 $val9 = random(100, 900, 1);
