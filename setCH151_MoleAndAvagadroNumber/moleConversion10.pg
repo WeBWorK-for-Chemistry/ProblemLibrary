@@ -89,7 +89,7 @@ Context("Numeric");
 
 $m = random(1.01 ,9.99, 0.01);
 
-$x = random(0,8);
+$x = random(0,7);
 
 
 
