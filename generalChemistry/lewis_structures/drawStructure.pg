@@ -1,0 +1,141 @@
+##DESCRIPTION
+##  Lewis Structures
+##ENDDESCRIPTION
+
+##KEYWORDS('lewis structures')
+
+## Date('3/5/2023')
+## Author('Lee McPherson')
+## Institution('Portland Community College')
+
+
+########################################################################
+
+DOCUMENT();      
+
+loadMacros(
+   "PGstandard.pl",     # Standard macros for PG language
+   "MathObjects.pl",
+   "PGML.pl",
+   "niceTables.pl",
+   "contextChemical.pl",
+   "contextInexactValue.pl",
+   "contextInexactValueWithUnits.pl",
+   "parserDimensionalAnalysis.pl",
+   "parserMultiAnswer.pl",
+   "weightedGrader.pl",
+   "contextArbitraryString.pl"
+);
+
+##############################################################
+#
+#  Setup
+#
+#
+# WARNING!  Requires javascript package found at https://github.com/limefrogyank/LewisStructuresWeb
+
+HEADER_TEXT(<<EOF);
+  <script src="/webwork2_course_files/chem/bundle.js"></script>
+  <script>
+window.addEventListener('load', (event)=>{
+    const smilesOutput = document.getElementById('smilesOutput');
+    const svgOutput = document.getElementById('svgOutput');
+    const kekuleOutput = document.getElementById('kekuleOutput');
+    const resultOutput = document.getElementById('resultOutput');
+    const lewisStructureCanvas = document.getElementsByTagName("lewis-structure-canvas")[0];
+
+    lewisStructureCanvas.addEventListener('change', async (ev)=>{
+        svgOutput.value = btoa(lewisStructureCanvas.getSVG());
+        kekuleOutput.value = btoa(lewisStructureCanvas.getKekuleMime());
+        smilesOutput.value = await lewisStructureCanvas.getSMILESAsync();
+        console.log(await lewisStructureCanvas.compareMoleculeAsync());
+        resultOutput.value = JSON.stringify(await lewisStructureCanvas.compareMoleculeAsync());  // this only works if smiles attribute is set!
+    });
+
+    if (kekuleOutput.value !== ""){
+        console.log("kekule was not blank");
+        lewisStructureCanvas.loadKekule(atob(kekuleOutput.value));
+    }
+
+});
+  </script>
+EOF
+
+$smilesAnswer = 'N';
+
+$drawingTool = MODES(
+	HTML=>
+	"<lewis-structure-canvas id='drawingTool' smiles='$smilesAnswer'></lewis-structure-canvas>",
+	TeX =>
+	"An embedded Lewis Structure drawing app. Need to show a box here for printable version."
+);
+
+
+
+
+Context("ArbitraryString");
+
+##############################################################
+#
+#  Problem
+#
+#
+
+my $resultOutput = $inputs_ref->{"resultOutput"};
+my $smilesOutput = $inputs_ref->{"smilesOutput"};
+my $svgOutput = $inputs_ref->{"svgOutput"};
+my $kekuleOutput = $inputs_ref->{"kekuleOutput"};
+
+TEXT(qq!<h3>Draw the structure for ammonia in the box below:</h3>!);
+
+TEXT(qq!$drawingTool!);
+
+# These are hidden html inputs that the tool dumps information into so that webwork can check the answer.
+TEXT(qq!<input type='hidden' name="smilesOutput" id="smilesOutput" value="$smilesOutput" /><br />!);
+TEXT(qq!<input type='hidden' name="resultOutput" id="resultOutput" value="$resultOutput" /><br />!);
+TEXT(qq!<input type='hidden' name="svgOutput" id="svgOutput" value="$svgOutput" /><br />!);
+TEXT(qq!<input type='hidden' name="kekuleOutput" id="kekuleOutput" value="$kekuleOutput" /><br />!);
+
+RECORD_FORM_LABEL('resultOutput');
+NAMED_HIDDEN_ANS_RULE('smilesOutput');
+RECORD_FORM_LABEL('svgOutput');
+RECORD_FORM_LABEL('kekuleOutput');
+
+LABELED_ANS('smilesOutput',Compute($smilesAnswer)->cmp(checker => sub {
+	my ($correct,$student,$ansHash) = @_;
+	$ansHash->{student_ans} = $main::PG->decode_base64($svgOutput);
+	$ansHash->{preview_latex_string} = "\mathrm{No\space latex}\space";
+	if (defined $answerSVGbase64Encoded){
+		$ansHash->{correct_ans} = $main::PG->decode_base64($answerSVGbase64Encoded);  
+		$ansHash->{correct_ans_latex_string} = "";#"\]".$main::PG->decode_base64($answerSVGbase64Encoded)."\[";  
+		# the "\]" and "\[" is a hack to make the svg show normally despite it being encapsulated by these TeX markers. 
+	}
+	return $correct->value eq $student->value;
+}));
+
+
+# SOLUTION
+
+$answerTool = MODES(
+	HTML=>
+	"<lewis-structure-canvas id='answerTool' readonly></lewis-structure-canvas>
+    <script>
+    window.addEventListener('load', (event)=>{
+    const answerTool = document.getElementById('answerTool');
+    answerTool.loadMoleculeUsingSmilesAsync('$smilesAnswer');
+
+});
+    </script>
+    ",
+	TeX =>
+	"An embedded Lewis Structure drawing app. Need to show a box here for printable version."
+);
+
+
+BEGIN_PGML_SOLUTION
+
+[@ $answerTool @]*
+
+END_PGML_SOLUTION
+
+ENDDOCUMENT();        
